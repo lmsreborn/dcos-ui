@@ -8,6 +8,7 @@ import {
   updateSchedule,
   updateJob,
   deleteJob,
+  stopJobRun,
   JobResponse as MetronomeJobResponse,
   JobDetailResponse as MetronomeJobDetailResponse
 } from "#SRC/js/events/MetronomeClient";
@@ -48,6 +49,7 @@ export interface ResolverArgs {
     data: MetronomeJobDetailResponse
   ) => Observable<JobLink>;
   deleteJob: (id: string, stopCurrentJobRuns: boolean) => Observable<JobLink>;
+  stopJobRun: (id: string, jobRunId: string) => Observable<JobLink>;
 }
 
 export interface GeneralArgs {
@@ -90,6 +92,7 @@ export const typeDefs = `
     updateJob(id: String!, data: Job!): JobLink!
     updateSchedule(id: String!, data: Job!): JobLink!
     deleteJob(id: String!, stopCurrentJobRuns: Boolean!): JobLink!
+    stopJobRun(id: String!, jobRunid: String!): JobLink!
   }
   `;
 
@@ -109,7 +112,8 @@ export const resolvers = ({
   createJob,
   updateJob,
   updateSchedule,
-  deleteJob
+  deleteJob,
+  stopJobRun
 }: ResolverArgs): IResolvers => ({
   Query: {
     jobs(
@@ -213,6 +217,24 @@ export const resolvers = ({
         }
       });
     },
+    stopJobRun(
+      _parent = {},
+      args: GeneralArgs,
+      _context = {}
+    ): Observable<JobLink> {
+      if (args.id && args.jobRunId) {
+        return stopJobRun(args.id, args.jobRunId).map(({ jobId }) => ({
+          jobId
+        }));
+      }
+
+      return Observable.throw({
+        response: {
+          message:
+            "stopJobRun requires both `id` and `jobRunId` to be provided!"
+        }
+      });
+    },
     updateJob(
       _parent = {},
       args: GeneralArgs,
@@ -241,6 +263,7 @@ export default makeExecutableSchema({
     createJob,
     updateJob,
     updateSchedule,
-    deleteJob
+    deleteJob,
+    stopJobRun
   })
 });

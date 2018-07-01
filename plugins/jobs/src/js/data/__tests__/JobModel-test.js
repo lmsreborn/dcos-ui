@@ -2019,6 +2019,56 @@ describe("JobModel Resolver", () => {
     );
   });
 
+  describe("stopJobRun", () => {
+    it(
+      "returns a JobLink shaped object",
+      marbles(m => {
+        m.bind();
+        const result$ = resolvers({
+          stopJobRun: () =>
+            Observable.of({
+              jobId: "bestJobEver",
+              somethingElse: true
+            })
+        }).Mutation.stopJobRun(
+          {},
+          { id: "bestJobEver", jobRunId: "theBestRun" }
+        );
+
+        m.expect(result$.take(1)).toBeObservable(
+          m.cold("(x|)", {
+            x: {
+              jobId: "bestJobEver"
+            }
+          })
+        );
+      })
+    );
+
+    it(
+      "throws when arguments are missing",
+      marbles(m => {
+        m.bind();
+        const result$ = resolvers({
+          stopJobRun: () => {}
+        }).Mutation.stopJobRun({}, {});
+
+        m.expect(result$.take(1)).toBeObservable(
+          m.cold(
+            "#",
+            {},
+            {
+              response: {
+                message:
+                  "stopJobRun requires both `id` and `jobRunId` to be provided!"
+              }
+            }
+          )
+        );
+      })
+    );
+  });
+
   describe("updateSchedule", () => {
     it(
       "returns a JobLink shaped object",
