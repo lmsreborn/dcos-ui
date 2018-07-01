@@ -1,6 +1,5 @@
 import * as React from "react";
-import { componentFromStream } from "data-service";
-import { deleteJob } from "#SRC/js/events/MetronomeClient";
+import { componentFromStream, graphqlObservable } from "data-service";
 import { Subject } from "rxjs/Subject";
 import "rxjs/add/operator/map";
 import "rxjs/add/operator/switchMap";
@@ -9,14 +8,24 @@ import "rxjs/add/operator/combineLatest";
 import "rxjs/add/operator/startWith";
 import "rxjs/add/operator/catch";
 
-import JobDeleteModal from "./components/JobDeleteModal";
+import gql from "graphql-tag";
 
-function errorIsTaskCurrentRunning(errorMsg) {
-  return /stopCurrentJobRuns=true/.test(errorMsg);
-}
+import JobDeleteModal from "./components/JobDeleteModal";
+import defaultSchema from "./data/JobModel";
+
+const deleteJob = gql`
+  mutation {
+    deleteJob(id: $jobId, stopCurrentJobRuns: $stopCurrentJobRuns) {
+      jobId
+    }
+  }
+`;
 
 function executeDelete({ jobId, stopCurrentJobRuns, onSuccess, errorMsg }) {
-  return deleteJob(jobId, stopCurrentJobRuns)
+  return graphqlObservable(deleteJob, defaultSchema, {
+    jobId,
+    stopCurrentJobRuns
+  })
     .map(_ => ({ done: true, stopCurrentJobRuns, errorMsg }))
     .do(_ => onSuccess())
     .startWith({ done: false, stopCurrentJobRuns, errorMsg });
@@ -37,6 +46,10 @@ function deleteOperation() {
       deleteSubject$.next({ jobId, stopCurrentJobRuns, onSuccess, errorMsg });
     }
   };
+}
+
+function errorIsTaskCurrentRunning(errorMsg) {
+  return /stopCurrentJobRuns=true/.test(errorMsg);
 }
 
 const JobDelete = componentFromStream(prop$ => {

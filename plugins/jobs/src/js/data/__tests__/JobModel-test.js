@@ -1969,6 +1969,103 @@ describe("JobModel Resolver", () => {
     );
   });
 
+  describe("deleteJob", () => {
+    it(
+      "returns a JobLink shaped object",
+      marbles(m => {
+        m.bind();
+        const result$ = resolvers({
+          deleteJob: () =>
+            Observable.of({
+              jobId: "bestJobEver",
+              somethingElse: true
+            })
+        }).Mutation.deleteJob(
+          {},
+          { id: "bestJobEver", stopCurrentJobRuns: false }
+        );
+
+        m.expect(result$.take(1)).toBeObservable(
+          m.cold("(x|)", {
+            x: {
+              jobId: "bestJobEver"
+            }
+          })
+        );
+      })
+    );
+
+    it(
+      "throws when arguments are missing",
+      marbles(m => {
+        m.bind();
+        const result$ = resolvers({
+          deleteJob: () => {}
+        }).Mutation.deleteJob({}, {});
+
+        m.expect(result$.take(1)).toBeObservable(
+          m.cold(
+            "#",
+            {},
+            {
+              response: {
+                message:
+                  "deleteJob requires both `id` and `stopCurrentJobRuns` to be provided!"
+              }
+            }
+          )
+        );
+      })
+    );
+  });
+
+  describe("updateSchedule", () => {
+    it(
+      "returns a JobLink shaped object",
+      marbles(m => {
+        m.bind();
+        const result$ = resolvers({
+          updateSchedule: () =>
+            Observable.of({
+              jobId: "bestJobEver",
+              somethingElse: true
+            })
+        }).Mutation.updateSchedule({}, { id: "bestJobEver", data: {} });
+
+        m.expect(result$.take(1)).toBeObservable(
+          m.cold("(x|)", {
+            x: {
+              jobId: "bestJobEver"
+            }
+          })
+        );
+      })
+    );
+
+    it(
+      "throws when arguments are missing",
+      marbles(m => {
+        m.bind();
+        const result$ = resolvers({
+          updateSchedule: () => {}
+        }).Mutation.updateSchedule({}, {});
+
+        m.expect(result$.take(1)).toBeObservable(
+          m.cold(
+            "#",
+            {},
+            {
+              response: {
+                message:
+                  "updateSchedule requires the `id` and `data` of the job to run"
+              }
+            }
+          )
+        );
+      })
+    );
+  });
+
   describe("updateJob", () => {
     const jobData = {
       id: "bestJobEver"

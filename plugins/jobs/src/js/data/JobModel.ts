@@ -7,6 +7,7 @@ import {
   runJob,
   updateSchedule,
   updateJob,
+  deleteJob,
   JobResponse as MetronomeJobResponse,
   JobDetailResponse as MetronomeJobDetailResponse
 } from "#SRC/js/events/MetronomeClient";
@@ -46,6 +47,7 @@ export interface ResolverArgs {
     id: string,
     data: MetronomeJobDetailResponse
   ) => Observable<JobLink>;
+  deleteJob: (id: string, stopCurrentJobRuns: boolean) => Observable<JobLink>;
 }
 
 export interface GeneralArgs {
@@ -87,6 +89,7 @@ export const typeDefs = `
     createJob(data: Job!): JobLink!
     updateJob(id: String!, data: Job!): JobLink!
     updateSchedule(id: String!, data: Job!): JobLink!
+    deleteJob(id: String!, stopCurrentJobRuns: Boolean!): JobLink!
   }
   `;
 
@@ -105,7 +108,8 @@ export const resolvers = ({
   runJob,
   createJob,
   updateJob,
-  updateSchedule
+  updateSchedule,
+  deleteJob
 }: ResolverArgs): IResolvers => ({
   Query: {
     jobs(
@@ -187,6 +191,28 @@ export const resolvers = ({
         response: { message: "createJob requires `data` to be provided!" }
       });
     },
+    deleteJob(
+      _parent = {},
+      args: GeneralArgs,
+      _context = {}
+    ): Observable<JobLink> {
+      const stopCurrentJobRunsIsBoolean =
+        typeof args.stopCurrentJobRuns === "boolean";
+
+      if (args.id && stopCurrentJobRunsIsBoolean) {
+        return deleteJob(args.id, args.stopCurrentJobRuns).map(({ jobId }) => ({
+          jobId
+        }));
+      }
+
+      return Observable.throw({
+        response: {
+          message:
+            "deleteJob requires both `id` and `stopCurrentJobRuns` to" +
+            " be provided!"
+        }
+      });
+    },
     updateJob(
       _parent = {},
       args: GeneralArgs,
@@ -214,6 +240,7 @@ export default makeExecutableSchema({
     runJob,
     createJob,
     updateJob,
-    updateSchedule
+    updateSchedule,
+    deleteJob
   })
 });
