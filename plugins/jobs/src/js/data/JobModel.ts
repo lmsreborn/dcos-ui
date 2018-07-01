@@ -5,6 +5,7 @@ import {
   fetchJobs,
   fetchJobDetail,
   runJob,
+  updateSchedule,
   updateJob,
   JobResponse as MetronomeJobResponse,
   JobDetailResponse as MetronomeJobDetailResponse
@@ -41,6 +42,10 @@ export interface ResolverArgs {
     id: string,
     data: MetronomeJobDetailResponse
   ) => Observable<MetronomeJobDetailResponse>;
+  updateSchedule: (
+    id: string,
+    data: MetronomeJobDetailResponse
+  ) => Observable<JobLink>;
 }
 
 export interface GeneralArgs {
@@ -81,6 +86,7 @@ export const typeDefs = `
     runJob(id: String!): JobLink!
     createJob(data: Job!): JobLink!
     updateJob(id: String!, data: Job!): JobLink!
+    updateSchedule(id: String!, data: Job!): JobLink!
   }
   `;
 
@@ -98,7 +104,8 @@ export const resolvers = ({
   pollingInterval,
   runJob,
   createJob,
-  updateJob
+  updateJob,
+  updateSchedule
 }: ResolverArgs): IResolvers => ({
   Query: {
     jobs(
@@ -141,7 +148,31 @@ export const resolvers = ({
       args: GeneralArgs,
       _context = {}
     ): Observable<JobLink> {
-      return runJob(args.id).map(({ jobId }) => ({ jobId }));
+      if (args.id) {
+        return runJob(args.id).map(({ jobId }) => ({ jobId }));
+      }
+
+      return Observable.throw({
+        response: { message: "runJob requires the `id` of the job to run" }
+      });
+    },
+    updateSchedule(
+      _parent = {},
+      args: GeneralArgs,
+      _context = {}
+    ): Observable<JobLink> {
+      if (args.id && args.data) {
+        return updateSchedule(args.id, args.data).map(({ jobId }) => ({
+          jobId
+        }));
+      }
+
+      return Observable.throw({
+        response: {
+          message:
+            "updateSchedule requires the `id` and `data` of the job to run"
+        }
+      });
     },
     createJob(
       _parent = {},
@@ -164,6 +195,7 @@ export const resolvers = ({
       if (args.id && args.data) {
         return updateJob(args.id, args.data);
       }
+
       return Observable.throw({
         response: {
           message: "updateJob requires both `id` and `data` to be provided!"
@@ -181,6 +213,7 @@ export default makeExecutableSchema({
     pollingInterval: Config.getRefreshRate(),
     runJob,
     createJob,
-    updateJob
+    updateJob,
+    updateSchedule
   })
 });

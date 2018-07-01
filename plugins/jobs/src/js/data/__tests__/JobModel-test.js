@@ -1945,6 +1945,28 @@ describe("JobModel Resolver", () => {
         );
       })
     );
+
+    it(
+      "throws when arguments are missing",
+      marbles(m => {
+        m.bind();
+        const result$ = resolvers({
+          runjob: () => {}
+        }).Mutation.runJob({}, {});
+
+        m.expect(result$.take(1)).toBeObservable(
+          m.cold(
+            "#",
+            {},
+            {
+              response: {
+                message: "runJob requires the `id` of the job to run"
+              }
+            }
+          )
+        );
+      })
+    );
   });
 
   describe("updateJob", () => {
