@@ -16,6 +16,8 @@ function defaultContent(jobId) {
   };
 }
 
+//FIX: content
+//Fix: make it simpler to understand
 function stopJobsCotent(jobId) {
   const stopCurrentRunsLabel = `Stop Current Runs and ${StringUtil.capitalize(
     UserActions.DELETE
@@ -39,6 +41,7 @@ function modalContent(jobId, stopCurrentJobRuns) {
   return contentBuilder(jobId);
 }
 
+//FIX: Modal content
 function modalContentHtml(message) {
   return (
     <div>

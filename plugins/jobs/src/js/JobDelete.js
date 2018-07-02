@@ -40,6 +40,7 @@ function deleteOperation() {
 }
 
 const JobDelete = componentFromStream(prop$ => {
+  // FIX: Verify
   const { delete$, deleteHandler } = deleteOperation();
   const deleteEmit$ = delete$.startWith({ done: null });
 
@@ -48,7 +49,9 @@ const JobDelete = componentFromStream(prop$ => {
       return { ...props, ...deleteOp };
     })
     .map(({ open, jobId, onClose, onSuccess, errorMsg, done }) => {
+      //FIX: Inline
       const isDisabled = done === false;
+      //FIX: Remove
       const isOpen = open;
 
       const stopCurrentJobRuns = errorIsTaskCurrentRunning(errorMsg);
@@ -57,6 +60,7 @@ const JobDelete = componentFromStream(prop$ => {
         deleteHandler(jobId, stopCurrentJobRuns, onSuccess, errorMsg);
       };
 
+      //Fix onClose
       const onCloseEvent = () => {
         onClose();
       };
