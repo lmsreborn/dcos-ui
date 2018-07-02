@@ -40,6 +40,7 @@ class JobStopRunModal extends React.Component {
     );
   }
 
+  // FIX ternary and stuff
   render() {
     const { onClose, open, selectedItems } = this.props;
     let rightButtonText = "Stop Job Run";

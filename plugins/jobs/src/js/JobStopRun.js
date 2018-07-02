@@ -36,6 +36,10 @@ function stopOperation() {
   };
 }
 
+// FIX daniel tests if (jobRuns.length === 1) {
+// FIX recover comment on why jobRuns
+// FIX isDisabled
+// FIX events and callbacks
 const JobStopRun = componentFromStream(props$ => {
   const { stop$, stopHandler } = stopOperation();
   const stopEmit$ = stop$.startWith({ done: null });
